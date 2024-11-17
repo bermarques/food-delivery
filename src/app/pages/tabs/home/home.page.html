@@ -8,27 +8,8 @@
 </ion-header>
 
 <ion-content>
-  <ion-row class="borderBottom">
-    <div>
-      <swiper-container
-        [modules]="swiperModules"
-        [slidesPerView]="1.2"
-        [spaceBetween]="20"
-        [keyboard]="true"
-        [pagination]="{clickable: true, dynamicBullets: true}"
-      >
-        <swiper-slide>
-          <img src="assets/imgs/1.jpg" alt="Slider image 1" />
-        </swiper-slide>
-        <swiper-slide>
-          <img src="assets/imgs/2.jpg" alt="Slider image 2" />
-        </swiper-slide>
-        <swiper-slide>
-          <img src="assets/imgs/3.jpg" alt="Slider image 3" />
-        </swiper-slide>
-      </swiper-container>
-    </div>
-  </ion-row>
+  <app-banner [bannerImages]="banners"></app-banner>
+
   <ion-list>
     <ion-list-header class="ion-margin-bottom">
       <ion-label>
