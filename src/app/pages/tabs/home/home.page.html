@@ -8,23 +8,54 @@
 </ion-header>
 
 <ion-content>
-  <div>
-    <swiper-container
-      [modules]="swiperModules"
-      [slidesPerView]="1.2"
-      [spaceBetween]="20"
-      [keyboard]="true"
-      [pagination]="{clickable: true, dynamicBullets: true}"
-    >
-      <swiper-slide>
-        <img src="assets/imgs/1.jpg" alt="Slider image 1" />
-      </swiper-slide>
-      <swiper-slide>
-        <img src="assets/imgs/2.jpg" alt="Slider image 2" />
-      </swiper-slide>
-      <swiper-slide>
-        <img src="assets/imgs/3.jpg" alt="Slider image 3" />
-      </swiper-slide>
-    </swiper-container>
-  </div>
+  <ion-row class="borderBottom">
+    <div>
+      <swiper-container
+        [modules]="swiperModules"
+        [slidesPerView]="1.2"
+        [spaceBetween]="20"
+        [keyboard]="true"
+        [pagination]="{clickable: true, dynamicBullets: true}"
+      >
+        <swiper-slide>
+          <img src="assets/imgs/1.jpg" alt="Slider image 1" />
+        </swiper-slide>
+        <swiper-slide>
+          <img src="assets/imgs/2.jpg" alt="Slider image 2" />
+        </swiper-slide>
+        <swiper-slide>
+          <img src="assets/imgs/3.jpg" alt="Slider image 3" />
+        </swiper-slide>
+      </swiper-container>
+    </div>
+  </ion-row>
+  <ion-list>
+    <ion-list-header class="ion-margin-bottom">
+      <ion-label>
+        <h4>Restaurants Nearby</h4>
+        <p>Discover unique tastes near you</p>
+      </ion-label>
+    </ion-list-header>
+    <ion-item lines="none">
+      <ion-thumbnail slot="start">
+        <img src="assets/imgs/1.jpg" />
+      </ion-thumbnail>
+      <ion-label>
+        <h4>Stayfit</h4>
+        <ion-text color="medium">
+          <ion-text color="dark">
+            <p class="pStyle">Italian, Mexican</p>
+            <span>
+              <ion-icon name="star"></ion-icon>
+              5 .
+            </span>
+            25 mins. $10 for two
+          </ion-text>
+          <ion-text color="tertiary">
+            <p class="distance">2459km away</p>
+          </ion-text>
+        </ion-text>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>
