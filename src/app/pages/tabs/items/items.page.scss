@@ -1,0 +1,62 @@
+h1 {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.dashedBorderBottom {
+  border-bottom: 1px dashed var(--ion-color-medium);
+  padding-bottom: 1vh;
+  margin-bottom: 1vh;
+}
+
+.veg {
+  align-items: center;
+  gap: 0.8rem;
+}
+
+ion-item {
+  ion-thumbnail {
+    height: 10vh;
+    width: 20vw;
+    img {
+      border-radius: 5px;
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  ion-row {
+    border: 1px solid var(--ion-color-medium);
+    border-radius: 2px;
+    padding: 0.3rem;
+  }
+}
+ion-list-header {
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.quantity {
+  width: 2rem;
+}
+
+ion-text {
+  font-size: 0.8rem;
+  p {
+    margin-top: 0.2rem;
+  }
+}
+
+ion-footer {
+  h4,
+  p {
+    margin: 0;
+    margin-left: 3%;
+  }
+
+  p {
+    font-size: 0.55rem;
+    letter-spacing: 0.5px;
+  }
+}
