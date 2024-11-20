@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Preferences } from '@capacitor/preferences';
 import { NavController } from '@ionic/angular';
 
 @Component({
@@ -12,13 +13,15 @@ export class ItemsPage implements OnInit {
   data: any = {};
   items: any[] = [];
   veg: boolean = false;
+  cartData: any = {};
+  storedData: any = {};
   model = {
     icon: 'fast-food-outline',
     title: 'No Menu Available',
   };
   restaurants = [
     {
-      uuid: '12wefdss',
+      uuid: 'u1d1',
       cover: 'assets/imgs/1.jpg',
       name: 'Stayfit',
       short_name: 'stayfit',
@@ -30,7 +33,7 @@ export class ItemsPage implements OnInit {
       price: 100,
     },
     {
-      uuid: '12wefdefsdss',
+      uuid: 'u1d2',
       cover: 'assets/imgs/2.jpg',
       name: 'Stayfit1',
       short_name: 'stayfit1',
@@ -42,7 +45,7 @@ export class ItemsPage implements OnInit {
       price: 100,
     },
     {
-      uuid: '12wefdssrete',
+      uuid: 'u1d3',
       cover: 'assets/imgs/3.jpg',
       name: 'Stayfit2',
       short_name: 'stayfit2',
@@ -59,12 +62,12 @@ export class ItemsPage implements OnInit {
     {
       id: 'e00',
       name: 'Italian',
-      uuid: '12wefdss',
+      uuid: 'u1d1',
     },
     {
       id: 'e0',
       name: 'Mexican',
-      uuid: '12wefdss',
+      uuid: 'u1d1',
     },
   ];
 
@@ -78,7 +81,7 @@ export class ItemsPage implements OnInit {
       price: 120,
       rating: 0,
       status: true,
-      uuid: '12wefdss',
+      uuid: 'u1d1',
       variation: false,
       veg: false,
     },
@@ -91,7 +94,7 @@ export class ItemsPage implements OnInit {
       price: 200,
       rating: 0,
       status: true,
-      uuid: '12wefdss',
+      uuid: 'u1d1',
       variation: false,
       veg: true,
     },
@@ -104,13 +107,17 @@ export class ItemsPage implements OnInit {
       price: 150.5,
       rating: 0,
       status: true,
-      uuid: '12wefdss',
+      uuid: 'u1d1',
       variation: false,
       veg: false,
     },
   ];
 
-  constructor(private route: ActivatedRoute, private navCtrl: NavController) {}
+  constructor(
+    private route: ActivatedRoute,
+    private navCtrl: NavController,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.route.paramMap.subscribe((paramMap) => {
@@ -123,15 +130,116 @@ export class ItemsPage implements OnInit {
     });
   }
 
-  getItems() {
+  getCart() {
+    return Preferences.get({ key: 'cart' });
+  }
+
+  async getItems() {
     this.data = {};
+    this.cartData = {};
     this.data = this.restaurants.find((x) => (x.uuid = this.id));
-    this.items = this.allItems;
+    this.categories = this.categories.filter((x) => x.uuid === this.id);
+    this.items = this.allItems.filter((x) => x.uuid === this.id);
+    let cart = await this.getCart();
+
+    if (cart?.value) {
+      try {
+        this.storedData = JSON.parse(cart.value);
+        console.log('storedData: ', this.storedData);
+
+        if (
+          this.id === this.storedData.restaurant.uuid &&
+          this.allItems.length > 0
+        ) {
+          const storedItemsMap = new Map(
+            this.storedData.items.map((item: any) => [item.id, item.quantity])
+          );
+
+          this.allItems.forEach((item: any) => {
+            if (storedItemsMap.has(item.id)) {
+              item.quantity = storedItemsMap.get(item.id);
+            }
+          });
+        }
+
+        this.cartData.totalItem = this.storedData.totalItem;
+        this.cartData.totalPrice = this.storedData.totalPrice;
+      } catch (error) {
+        console.error('Erro ao processar os dados do carrinho:', error);
+      }
+    }
   }
 
   getCuisine(cuisine) {
     return cuisine.join(', ');
   }
 
-  vegOnly(event) {}
+  vegOnly(event) {
+    this.items = [];
+    if (event.detail.checked == true) {
+      this.items = this.allItems.filter((x) => x.veg);
+    } else {
+      this.items = this.allItems;
+    }
+  }
+
+  increaseQuantity(index) {
+    try {
+      if (!this.items[index].quantity || this.items[index].quantity === 0) {
+        this.items[index].quantity = 1;
+      } else {
+        this.items[index].quantity += 1;
+      }
+      this.calculate();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  decreaseQuantity(index) {
+    if (this.items[index].quantity !== 0) {
+      this.items[index].quantity -= 1;
+    } else {
+      this.items[index].quantity = 0;
+    }
+    this.calculate();
+  }
+
+  calculate() {
+    this.cartData.items = [];
+    let items = this.items.filter((x) => x.quantity > 0);
+    this.cartData.items = items;
+    this.cartData.totalPrice = 0;
+    this.cartData.totalItem = 0;
+
+    items.forEach((element) => {
+      this.cartData.totalItem += element.quantity;
+      this.cartData.totalPrice +=
+        parseFloat(element.price) * parseFloat(element.quantity);
+    });
+    this.cartData.totalPrice = this.cartData.totalPrice.toFixed(2);
+    if (this.cartData.totalItem === 0) {
+      this.cartData.totalItem = 0;
+      this.cartData.totalPrice = 0;
+    }
+  }
+
+  async saveToCart() {
+    try {
+      this.cartData.restaurant = {};
+      this.cartData.restaurant = this.data;
+      await Preferences.set({
+        key: 'cart',
+        value: JSON.stringify(this.cartData),
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async viewCart() {
+    if (this.cartData.items && this.cartData.items.length > 0)
+      await this.saveToCart();
+    this.router.navigate([this.router.url + '/cart']);
+  }
 }
