@@ -145,7 +145,6 @@ export class ItemsPage implements OnInit {
     if (cart?.value) {
       try {
         this.storedData = JSON.parse(cart.value);
-        console.log('storedData: ', this.storedData);
 
         if (
           this.id === this.storedData.restaurant.uuid &&
