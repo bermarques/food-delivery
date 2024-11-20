@@ -15,6 +15,7 @@ export class ItemsPage implements OnInit {
   veg: boolean = false;
   cartData: any = {};
   storedData: any = {};
+  isLoading = false;
   model = {
     icon: 'fast-food-outline',
     title: 'No Menu Available',
@@ -135,42 +136,42 @@ export class ItemsPage implements OnInit {
   }
 
   async getItems() {
+    this.isLoading = true;
     this.data = {};
     this.cartData = {};
-    this.data = this.restaurants.find((x) => (x.uuid = this.id));
-    this.categories = this.categories.filter((x) => x.uuid === this.id);
-    this.items = this.allItems.filter((x) => x.uuid === this.id);
-    let cart = await this.getCart();
 
-    if (cart?.value) {
-      try {
-        this.storedData = JSON.parse(cart.value);
+    setTimeout(async () => {
+      this.data = this.restaurants.find((x) => (x.uuid = this.id));
+      this.categories = this.categories.filter((x) => x.uuid === this.id);
+      this.items = this.allItems.filter((x) => x.uuid === this.id);
+      let cart = await this.getCart();
+      if (cart?.value) {
+        try {
+          this.storedData = JSON.parse(cart.value);
 
-        if (
-          this.id === this.storedData.restaurant.uuid &&
-          this.allItems.length > 0
-        ) {
-          const storedItemsMap = new Map(
-            this.storedData.items.map((item: any) => [item.id, item.quantity])
-          );
+          if (
+            this.id === this.storedData.restaurant.uuid &&
+            this.allItems.length > 0
+          ) {
+            const storedItemsMap = new Map(
+              this.storedData.items.map((item: any) => [item.id, item.quantity])
+            );
 
-          this.allItems.forEach((item: any) => {
-            if (storedItemsMap.has(item.id)) {
-              item.quantity = storedItemsMap.get(item.id);
-            }
-          });
+            this.allItems.forEach((item: any) => {
+              if (storedItemsMap.has(item.id)) {
+                item.quantity = storedItemsMap.get(item.id);
+              }
+            });
+          }
+
+          this.cartData.totalItem = this.storedData.totalItem;
+          this.cartData.totalPrice = this.storedData.totalPrice;
+        } catch (error) {
+          console.error('Erro ao processar os dados do carrinho:', error);
         }
-
-        this.cartData.totalItem = this.storedData.totalItem;
-        this.cartData.totalPrice = this.storedData.totalPrice;
-      } catch (error) {
-        console.error('Erro ao processar os dados do carrinho:', error);
       }
-    }
-  }
-
-  getCuisine(cuisine) {
-    return cuisine.join(', ');
+      this.isLoading = false;
+    }, 500);
   }
 
   vegOnly(event) {

@@ -8,9 +8,17 @@ import { ItemsPageRoutingModule } from './items-routing.module';
 
 import { ItemsPage } from './items.page';
 import { ItemComponent } from 'src/app/components/item/item.component';
+import { ComponentsModule } from '../../../components/components.module';
+import { RestaurantDetailComponent } from 'src/app/components/restaurant-detail/restaurant-detail.component';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, ItemsPageRoutingModule],
-  declarations: [ItemsPage, ItemComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    ItemsPageRoutingModule,
+    ComponentsModule,
+  ],
+  declarations: [ItemsPage, ItemComponent, RestaurantDetailComponent],
 })
 export class ItemsPageModule {}
