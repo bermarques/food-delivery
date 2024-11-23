@@ -1,26 +1,7 @@
-ion-img {
-  border-radius: 4px;
-}
-
-ion-input {
-  font-size: 0.8rem;
-}
-
-ion-footer {
-  ion-text,
-  p {
-    font-size: 0.7rem;
-  }
-
-  ion-col {
-    ion-label {
-      margin-left: 5px;
-    }
-  }
-}
-
-.colStyle {
-  background-color: var(--ion-color-success);
+.dotStyle {
+  border: 1px solid var(--ion-color-success);
+  padding: 0 0.1rem;
+  margin-right: 2vw;
 }
 
 ion-item {
@@ -39,4 +20,12 @@ ion-item {
   h5 {
     font-weight: bold;
   }
+}
+
+.quantity {
+  width: 2rem;
+}
+
+.price {
+  width: 3.5rem;
 }
