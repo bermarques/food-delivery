@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
+import { IonContent } from '@ionic/angular';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-cart',
@@ -8,11 +10,13 @@ import { Preferences } from '@capacitor/preferences';
   styleUrls: ['./cart.page.scss'],
 })
 export class CartPage implements OnInit {
+  @ViewChild(IonContent, { static: false }) content: IonContent;
   urlCheck = false;
   url = '';
   model: any;
   deliveryCharge = 5;
   instructions: any;
+  location: any = {};
   constructor(private router: Router) {}
 
   ngOnInit() {
@@ -28,6 +32,11 @@ export class CartPage implements OnInit {
 
   async getModel() {
     let data: any = await this.getCart();
+    this.location = {
+      lat: -32.03303,
+      lng: -52.099295,
+      address: 'Rio Grande, Rio Grande do Sul',
+    };
     if (data?.value) {
       this.model = await JSON.parse(data.value);
       this.calculate();
@@ -47,9 +56,7 @@ export class CartPage implements OnInit {
       this.model.totalPrice +=
         parseFloat(element.price) * parseFloat(element.quantity);
     });
-    console.log(this.deliveryCharge);
     this.model.deliveryCharge = this.deliveryCharge;
-    console.log(this.model.deliveryCharge);
     this.model.totalPrice = this.model.totalPrice.toFixed(2);
     this.model.total = (
       parseFloat(this.model.totalPrice) + parseFloat(this.model.deliveryCharge)
@@ -67,13 +74,54 @@ export class CartPage implements OnInit {
     return Preferences.remove({ key: 'cart' });
   }
 
-  increaseQuantity(index) {}
+  increaseQuantity(index) {
+    try {
+      if (
+        !this.model.items[index].quantity ||
+        this.model.items[index].quantity === 0
+      ) {
+        this.model.items[index].quantity = 1;
+      } else {
+        this.model.items[index].quantity += 1;
+      }
+      this.calculate();
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
-  decreaseQuantity(index) {}
+  decreaseQuantity(index) {
+    if (this.model.items[index].quantity !== 0) {
+      this.model.items[index].quantity -= 1;
+    } else {
+      this.model.items[index].quantity = 0;
+    }
+    this.calculate();
+  }
 
   addAddress() {}
 
   changeAddress() {}
 
-  makePayment() {}
+  makePayment() {
+    try {
+      const data = {
+        restaurant_id: this.model.restaurant.uuid,
+        restaurant: this.model.restaurant,
+        order: JSON.stringify(this.model.items),
+        time: moment().format('lll'),
+        address: this.location,
+        totalPrice: this.model.totalPrice,
+        total: this.model.total,
+        deliveryCharge: this.deliveryCharge,
+        status: 'Created',
+        paid: 'COD',
+      };
+      console.log('order', data);
+    } catch (err) {}
+  }
+
+  scrollToBottom() {
+    this.content.scrollToBottom(500);
+  }
 }

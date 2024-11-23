@@ -8,45 +8,47 @@
 </ion-header>
 
 <ion-content>
-  <ion-list lines="none" class="borderBottomSmall">
-    <ion-item>
-      <ion-thumbnail slot="start">
-        <ion-img
-          [src]="model?.restaurant?.cover ? model?.restaurant?.cover : 'assets/imgs/1.jpg'"
-        ></ion-img>
-      </ion-thumbnail>
-      <ion-label>
-        <ion-text> <h4>{{model?.restaurant?.name}}</h4></ion-text>
-        <ion-note>{{model?.restaurant?.address}}</ion-note>
-      </ion-label>
-    </ion-item>
-    <ion-item *ngFor="let item of model?.items; let i = index">
-      <ion-text color="success">
-        <span class="dotStyle">&#9679;</span>
-      </ion-text>
-      <ion-label class="ion-text-wrap">
-        <h5>{{item?.name}}</h5>
-      </ion-label>
-      <ion-row>
-        <ion-icon
-          color="success"
-          name="remove-outline"
-          (click)="decreaseQuantity( i)"
-        ></ion-icon>
-        <ion-text class="ion-text-center quantity" color="success"
-          >{{item?.quantity}}</ion-text
-        >
-        <ion-icon
-          color="success"
-          name="remove-outline"
-          (click)="increaseQuantity( i)"
-        ></ion-icon>
-      </ion-row>
-      <ion-text slot="end" color="dark" class="price ion-text-right">
-        ${{item.price * item.quantity }}
-      </ion-text>
-    </ion-item>
-  </ion-list>
+  <ng-container *ngIf="model?.restaurant">
+    <ion-list lines="none" class="borderBottomSmall">
+      <ion-item>
+        <ion-thumbnail slot="start">
+          <ion-img
+            [src]="model?.restaurant?.cover ? model?.restaurant?.cover : 'assets/imgs/1.jpg'"
+          ></ion-img>
+        </ion-thumbnail>
+        <ion-label>
+          <ion-text> <h4>{{model?.restaurant?.name}}</h4></ion-text>
+          <ion-note>{{model?.restaurant?.address}}</ion-note>
+        </ion-label>
+      </ion-item>
+      <ion-item *ngFor="let item of model?.items; let i = index">
+        <ion-text color="success">
+          <span class="dotStyle">&#9679;</span>
+        </ion-text>
+        <ion-label class="ion-text-wrap">
+          <h5>{{item?.name}}</h5>
+        </ion-label>
+        <ion-row>
+          <ion-icon
+            color="success"
+            name="remove-outline"
+            (click)="decreaseQuantity( i)"
+          ></ion-icon>
+          <ion-text class="ion-text-center quantity" color="success"
+            >{{item?.quantity}}</ion-text
+          >
+          <ion-icon
+            color="success"
+            name="remove-outline"
+            (click)="increaseQuantity( i)"
+          ></ion-icon>
+        </ion-row>
+        <ion-text slot="end" color="dark" class="price ion-text-right">
+          ${{item.price * item.quantity | number: '0.2-2'}}
+        </ion-text>
+      </ion-item>
+    </ion-list>
+  </ng-container>
 
   <ion-item lines="none" class="borderBottom">
     <ion-icon slot="start" name="list-outline"></ion-icon>
@@ -76,9 +78,9 @@
   </ion-list>
 </ion-content>
 
-<ion-footer>
+<ion-footer *ngIf="model?.restaurant">
   <ion-toolbar>
-    <ion-row>
+    <ion-row *ngIf="!location?.lat">
       <ion-col size="6">
         <ion-button
           expand="block"
@@ -95,7 +97,7 @@
         >
       </ion-col>
     </ion-row>
-    <ion-item lines="none">
+    <ion-item lines="none" *ngIf="location?.lat">
       <ion-button slot="end" size="small" fill="clear" (click)="changeAddress()"
         >CHANGE</ion-button
       >
@@ -105,12 +107,12 @@
         <ion-text color="medium"><p>Rio Grande, Rio Grande do Sul</p></ion-text>
       </ion-label>
     </ion-item>
-    <ion-row>
+    <ion-row *ngIf="location?.lat">
       <ion-col size="6" class="ion-no-padding">
         <ion-item lines="none" color="light">
           <ion-label>
             <h6>${{model?.total}}</h6>
-            <ion-text color="secondary">
+            <ion-text color="secondary" (click)="scrollToBottom()">
               VIEW DETAILED BILL
               <ion-icon name="chevron-down-outline"></ion-icon>
             </ion-text>
