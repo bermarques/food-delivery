@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { AddressService } from 'src/app/services/address/address.service';
 import { GlobalService } from 'src/app/services/global/global.service';
 
 @Component({
@@ -6,44 +8,49 @@ import { GlobalService } from 'src/app/services/global/global.service';
   templateUrl: './address.page.html',
   styleUrls: ['./address.page.scss'],
 })
-export class AddressPage implements OnInit {
+export class AddressPage implements OnInit, OnDestroy {
   isLoading: boolean;
   addresses: any[] = [];
+  addressesSub: Subscription;
+  model: any = {
+    title: 'No Addreses Found',
+    icon: 'location-outline',
+  };
 
-  constructor(private global: GlobalService) {}
+  constructor(
+    private global: GlobalService,
+    private addressService: AddressService,
+    private globalService: GlobalService
+  ) {}
 
   ngOnInit() {
+    this.addressesSub = this.addressService.addresses.subscribe((address) => {
+      if (address instanceof Array) {
+        this.addresses = address;
+      } else {
+        if (address?.delete) {
+          this.addresses = this.addresses.filter((a) => a.id !== address.id);
+        } else if (address?.update) {
+          const index = this.addresses.findIndex((a) => a.id === address.id);
+          this.addresses[index] = address;
+        } else {
+          this.addresses = this.addresses.concat(address);
+        }
+      }
+    });
+
     this.getAddresses();
   }
 
-  getAddresses() {
+  async getAddresses() {
     this.isLoading = true;
+    this.globalService.showLoader();
 
-    setTimeout(() => {
-      this.addresses = [
-        {
-          address: 'R. Andrade Neves',
-          house: '339',
-          id: '7Kox63KlggTvV7ebRKar',
-          landmark: 'Próximo ao supermercado',
-          lat: 26.1830738,
-          lng: 91.74049769999999,
-          title: 'Fancy',
-          user_id: '1',
-        },
-        {
-          address: 'R. General Botelho',
-          house: '411',
-          id: '8Kox63KlggTvV7ebRKar',
-          landmark: 'Próximo á escola',
-          lat: 26.1830738,
-          lng: 91.74049769999999,
-          title: 'Work',
-          user_id: '1',
-        },
-      ];
+    setTimeout(async () => {
+      await this.addressService.getAddresses();
+      this.globalService.hideLoader();
       this.isLoading = false;
-    }, 3000);
+    }, 500);
   }
 
   getIcon(title: string) {
@@ -51,5 +58,26 @@ export class AddressPage implements OnInit {
   }
   editAddress(address: any) {}
 
-  deleteAddress(address: any) {}
+  deleteAddress(address: any) {
+    this.globalService.showAlert(
+      'Are you sure you want to delete this address?',
+      'Confirm',
+      [
+        {
+          text: 'Yes',
+          role: 'confirm',
+          handler: async () => {
+            this.globalService.showLoader();
+            await this.addressService.deleteAddress(address);
+            this.globalService.hideLoader();
+          },
+        },
+        { text: 'No', role: 'cancel' },
+      ]
+    );
+  }
+
+  ngOnDestroy() {
+    if (this.addressesSub) this.addressesSub.unsubscribe();
+  }
 }
