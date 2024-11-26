@@ -129,6 +129,11 @@ export class ApiService {
       name: 'Mexican',
       uuid: 'u1d1',
     },
+    {
+      id: 'e0',
+      name: 'Italian',
+      uuid: 'u1d2',
+    },
   ];
 
   allItems = [
@@ -142,6 +147,19 @@ export class ApiService {
       rating: 0,
       status: true,
       uuid: 'u1d1',
+      variation: false,
+      veg: false,
+    },
+    {
+      category_id: 'e0',
+      cover: 'assets/imgs/pizza.jpg',
+      desc: 'Great in taste',
+      id: 'i1',
+      name: 'Pizza',
+      price: 120,
+      rating: 0,
+      status: true,
+      uuid: 'u1d2',
       variation: false,
       veg: false,
     },

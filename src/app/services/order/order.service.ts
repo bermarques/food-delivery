@@ -23,7 +23,7 @@ export class OrderService {
     }
   }
 
-  placeOrder(param) {
+  async placeOrder(param) {
     try {
       param.user_id = '1';
       param.order = JSON.parse(param.order);

@@ -1,10 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Preferences } from '@capacitor/preferences';
 import { IonContent, NavController } from '@ionic/angular';
 import * as moment from 'moment';
+import { Subscription } from 'rxjs';
+import { CartService } from 'src/app/services/cart/cart.service';
 import { GlobalService } from 'src/app/services/global/global.service';
 import { OrderService } from 'src/app/services/order/order.service';
+import { StorageService } from 'src/app/services/storage/storage.service';
 
 @Component({
   selector: 'app-cart',
@@ -19,91 +21,53 @@ export class CartPage implements OnInit {
   deliveryCharge = 5;
   instructions: any;
   location: any = {};
+  cartSub: Subscription;
+
   constructor(
     private router: Router,
     private orderService: OrderService,
     private global: GlobalService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private cartService: CartService,
+    private storage: StorageService
   ) {}
 
   ngOnInit() {
-    let url = this.router.url.replace('/cart', '');
-    this.url = url;
-    this.urlCheck = url.split('/').length > 3;
+    this.cartSub = this.cartService.cart.subscribe((cart) => {
+      console.log(cart);
+      this.model = cart;
+      if (!this.model) this.location = {};
+    });
+
     this.getModel();
   }
 
-  getCart() {
-    return Preferences.get({ key: 'cart' });
+  checkUrl() {
+    let url = this.router.url.replace('/cart', '');
+    this.url = url;
+    this.urlCheck = url.split('/').length > 3;
   }
 
   async getModel() {
-    let data: any = await this.getCart();
+    await this.checkUrl();
     this.location = {
       lat: -32.03303,
       lng: -52.099295,
       address: 'Rio Grande, Rio Grande do Sul',
     };
-    if (data?.value) {
-      this.model = await JSON.parse(data.value);
-      this.calculate();
-    }
-  }
-
-  async calculate() {
-    let item = this.model.items.filter((item) => item.quantity > 0);
-    this.model.items = item;
-    this.model.totalPrice = 0;
-    this.model.totalItem = 0;
-    this.model.deliveryCharge = 0;
-    this.model.total = 0;
-
-    item.forEach((element) => {
-      this.model.totalItem += element.quantity;
-      this.model.totalPrice +=
-        parseFloat(element.price) * parseFloat(element.quantity);
-    });
-    this.model.deliveryCharge = this.deliveryCharge;
-    this.model.totalPrice = this.model.totalPrice.toFixed(2);
-    this.model.total = (
-      parseFloat(this.model.totalPrice) + parseFloat(this.model.deliveryCharge)
-    ).toFixed(2);
-    if (this.model.totalItem === 0) {
-      this.model.totalItem = 0;
-      this.model.totalPrice = 0;
-      this.model.totalPrice = 0;
-      await this.clearCart();
-      this.model = null;
-    }
+    await this.cartService.getCartData();
   }
 
   async clearCart() {
-    return Preferences.remove({ key: 'cart' });
+    return this.storage.removeStorage('cart');
   }
 
   increaseQuantity(index) {
-    try {
-      if (
-        !this.model.items[index].quantity ||
-        this.model.items[index].quantity === 0
-      ) {
-        this.model.items[index].quantity = 1;
-      } else {
-        this.model.items[index].quantity += 1;
-      }
-      this.calculate();
-    } catch (err) {
-      console.log(err);
-    }
+    this.cartService.increaseQuantity(index);
   }
 
   decreaseQuantity(index) {
-    if (this.model.items[index].quantity !== 0) {
-      this.model.items[index].quantity -= 1;
-    } else {
-      this.model.items[index].quantity = 0;
-    }
-    this.calculate();
+    this.cartService.decreaseQuantity(index);
   }
 
   addAddress() {}
@@ -115,6 +79,7 @@ export class CartPage implements OnInit {
       const data = {
         restaurant_id: this.model.restaurant.uuid,
         restaurant: this.model.restaurant,
+        instructions: this.instructions ? this.instructions : '',
         order: JSON.stringify(this.model.items),
         time: moment().format('lll'),
         address: this.location,
@@ -133,5 +98,11 @@ export class CartPage implements OnInit {
 
   scrollToBottom() {
     this.content.scrollToBottom(500);
+  }
+
+  ionViewWillLeave() {
+    if (this.model?.items && this.model.items.length > 0) {
+      this.cartService.saveCart();
+    }
   }
 }

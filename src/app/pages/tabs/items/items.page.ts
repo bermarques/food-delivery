@@ -1,15 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
 import { NavController } from '@ionic/angular';
+import { Subscription, take } from 'rxjs';
 import { ApiService } from 'src/app/services/api/api.service';
+import { CartService } from 'src/app/services/cart/cart.service';
+import { StorageService } from 'src/app/services/storage/storage.service';
 
 @Component({
   selector: 'app-items',
   templateUrl: './items.page.html',
   styleUrls: ['./items.page.scss'],
 })
-export class ItemsPage implements OnInit {
+export class ItemsPage implements OnInit, OnDestroy {
   id: any;
   data: any = {};
   items: any[] = [];
@@ -24,66 +27,69 @@ export class ItemsPage implements OnInit {
   restaurants: any[] = [];
   categories: any[] = [];
   allItems: any[] = [];
+  cartSub: Subscription;
 
   constructor(
     private route: ActivatedRoute,
     private navCtrl: NavController,
     private router: Router,
-    private api: ApiService
+    private api: ApiService,
+    private cartService: CartService
   ) {}
 
   ngOnInit() {
-    this.route.paramMap.subscribe((paramMap) => {
+    this.route.paramMap.pipe(take(1)).subscribe((paramMap) => {
       if (!paramMap.has('restaurantId')) {
         this.navCtrl.back();
         return;
       }
       this.id = paramMap.get('restaurantId');
-      this.restaurants = this.api.restaurants1;
-      this.categories = this.api.categories;
-      this.allItems = this.api.allItems;
-      this.getItems();
+      console.log(this.id);
     });
-  }
 
-  getCart() {
-    return Preferences.get({ key: 'cart' });
-  }
+    this.cartSub = this.cartService.cart.subscribe((cart) => {
+      if (cart) {
+        this.storedData = cart;
+        this.cartData.totalItem = cart.totalItem;
+        this.cartData.totalPrice = cart.totalPrice;
 
+        if (cart.restaurant?.uuid === this.id) {
+          this.allItems.forEach((item) => {
+            const matchingCartItem = cart.items.find(
+              (cartItem) => cartItem.id === item.id
+            );
+            if (matchingCartItem) {
+              item.quantity = matchingCartItem.quantity;
+            }
+          });
+
+          this.cartData.items = this.allItems.filter(
+            (item) => item.quantity > 0
+          );
+
+          this.items = this.veg
+            ? this.allItems.filter((item) => item.veg)
+            : [...this.allItems];
+        }
+      }
+    });
+    this.getItems();
+  }
   async getItems() {
     this.isLoading = true;
     this.data = {};
     this.cartData = {};
+    this.storedData = {};
 
     setTimeout(async () => {
-      this.data = this.restaurants.find((x) => (x.uuid = this.id));
-      this.categories = this.categories.filter((x) => x.uuid === this.id);
-      this.items = this.allItems.filter((x) => x.uuid === this.id);
-      let cart = await this.getCart();
-      if (cart?.value) {
-        try {
-          this.storedData = JSON.parse(cart.value);
-
-          if (
-            this.id === this.storedData.restaurant.uuid &&
-            this.allItems.length > 0
-          ) {
-            const storedItemsMap = new Map(
-              this.storedData.items.map((item: any) => [item.id, item.quantity])
-            );
-
-            this.allItems.forEach((item: any) => {
-              if (storedItemsMap.has(item.id)) {
-                item.quantity = storedItemsMap.get(item.id);
-              }
-            });
-          }
-
-          this.cartData.totalItem = this.storedData.totalItem;
-          this.cartData.totalPrice = this.storedData.totalPrice;
-        } catch (error) {
-          console.error('Erro ao processar os dados do carrinho:', error);
-        }
+      try {
+        this.data = this.api.restaurants1.find((x) => (x.uuid = this.id));
+        this.categories = this.api.categories.filter((x) => x.uuid === this.id);
+        this.allItems = this.api.allItems.filter((x) => x.uuid === this.id);
+        this.items = [...this.allItems];
+        await this.cartService.getCartData();
+      } catch (error) {
+        console.error('Erro ao processar os dados do carrinho:', error);
       }
       this.isLoading = false;
     }, 500);
@@ -98,55 +104,34 @@ export class ItemsPage implements OnInit {
     }
   }
 
-  increaseQuantity(index) {
-    try {
-      if (!this.items[index].quantity || this.items[index].quantity === 0) {
-        this.items[index].quantity = 1;
+  increaseQuantity(item) {
+    const index = this.allItems.findIndex((x) => x.id === item.id);
+    if (!this.allItems[index].quantity || this.allItems[index].quantity == 0) {
+      if (
+        !this.storedData.restaurant ||
+        (this.storedData.restaurant &&
+          this.storedData.restaurant.uuid === this.id)
+      ) {
+        console.log('index item: ', this.allItems);
+        this.cartService.increaseQuantity(index, this.allItems, this.data);
       } else {
-        this.items[index].quantity += 1;
+        this.cartService.alertClearCart(index, this.allItems, this.data);
       }
-      this.calculate();
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  decreaseQuantity(index) {
-    if (this.items[index].quantity !== 0) {
-      this.items[index].quantity -= 1;
     } else {
-      this.items[index].quantity = 0;
+      this.cartService.increaseQuantity(index, this.allItems, this.data);
     }
-    this.calculate();
   }
 
-  calculate() {
-    this.cartData.items = [];
-    let items = this.items.filter((x) => x.quantity > 0);
-    this.cartData.items = items;
-    this.cartData.totalPrice = 0;
-    this.cartData.totalItem = 0;
-
-    items.forEach((element) => {
-      this.cartData.totalItem += element.quantity;
-      this.cartData.totalPrice +=
-        parseFloat(element.price) * parseFloat(element.quantity);
-    });
-    this.cartData.totalPrice = this.cartData.totalPrice.toFixed(2);
-    if (this.cartData.totalItem === 0) {
-      this.cartData.totalItem = 0;
-      this.cartData.totalPrice = 0;
-    }
+  decreaseQuantity(item) {
+    const index = this.allItems.findIndex((x) => x.id === item.id);
+    this.cartService.decreaseQuantity(index);
   }
 
   async saveToCart() {
     try {
       this.cartData.restaurant = {};
       this.cartData.restaurant = this.data;
-      await Preferences.set({
-        key: 'cart',
-        value: JSON.stringify(this.cartData),
-      });
+      this.cartService.saveCart();
     } catch (err) {
       console.log(err);
     }
@@ -156,5 +141,15 @@ export class ItemsPage implements OnInit {
     if (this.cartData.items && this.cartData.items.length > 0)
       await this.saveToCart();
     this.router.navigate([this.router.url + '/cart']);
+  }
+
+  async ionViewWillLeave() {
+    console.log('ionViewWillLeave ItemsPage');
+    if (this.cartData?.items && this.cartData?.items.length > 0)
+      await this.saveToCart();
+  }
+
+  ngOnDestroy() {
+    if (this.cartSub) this.cartSub.unsubscribe();
   }
 }

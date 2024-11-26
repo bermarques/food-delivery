@@ -12,13 +12,15 @@ export class ItemComponent implements OnInit {
   @Output() remove: EventEmitter<any> = new EventEmitter();
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log(this.item);
+  }
 
   increaseQuantity() {
-    this.add.emit(this.index);
+    this.add.emit(this.item);
   }
 
   decreaseQuantity() {
-    this.remove.emit(this.index);
+    this.remove.emit(this.item);
   }
 }
