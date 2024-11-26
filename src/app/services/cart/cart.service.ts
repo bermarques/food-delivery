@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { StorageService } from '../storage/storage.service';
 import { GlobalService } from '../global/global.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +16,11 @@ export class CartService {
     return this._cart.asObservable();
   }
 
-  constructor(private storage: StorageService, private global: GlobalService) {}
+  constructor(
+    private storage: StorageService,
+    private global: GlobalService,
+    private router: Router
+  ) {}
 
   getCart() {
     return this.storage.getStorage('cart');
@@ -55,7 +60,7 @@ export class CartService {
       this.model.totalPrice = 0;
       this.model.totalPrice = 0;
       await this.clearCart();
-      this.model = null;
+      this.model = {};
     }
   }
 
@@ -72,7 +77,7 @@ export class CartService {
             this.clearCart();
             this.model = {};
             if (order) {
-              // this.orderToCart(order);
+              this.orderToCart(order);
             } else this.increaseQuantity(index, items, data);
           },
         },
@@ -106,7 +111,6 @@ export class CartService {
       await this.calculate();
       this._cart.next(this.model);
     } catch (e) {
-      console.log(e);
       throw e;
     }
   }
@@ -131,5 +135,17 @@ export class CartService {
   saveCart(model?) {
     if (model) this.model = model;
     this.storage.setStorage('cart', JSON.stringify(this.model));
+  }
+
+  async orderToCart(order) {
+    const data = {
+      restaurant: order.restaurant,
+      items: order.order,
+    };
+    this.model = data;
+    await this.calculate();
+    this.saveCart();
+    this._cart.next(data);
+    this.router.navigate(['/', 'tabs', 'restaurants', order.restaurant.uuid]);
   }
 }

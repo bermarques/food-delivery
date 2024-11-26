@@ -48,28 +48,19 @@ export class ItemsPage implements OnInit, OnDestroy {
     });
 
     this.cartSub = this.cartService.cart.subscribe((cart) => {
-      if (cart) {
+      this.cartData = {};
+      this.storedData = {};
+
+      if (cart && cart?.totalItem > 0) {
         this.storedData = cart;
-        this.cartData.totalItem = cart.totalItem;
-        this.cartData.totalPrice = cart.totalPrice;
+        this.updateCartData();
 
-        if (cart.restaurant?.uuid === this.id) {
-          this.allItems.forEach((item) => {
-            const matchingCartItem = cart.items.find(
-              (cartItem) => cartItem.id === item.id
-            );
-            if (matchingCartItem) {
-              item.quantity = matchingCartItem.quantity;
-            }
-          });
-
-          this.cartData.items = this.allItems.filter(
-            (item) => item.quantity > 0
-          );
-
-          this.items = this.veg
-            ? this.allItems.filter((item) => item.veg)
-            : [...this.allItems];
+        if (cart?.restaurant?.uuid === this.id) {
+          this.updateAllItems(cart.items);
+          this.filterItemsBasedOnVeg();
+        } else {
+          this.resetAllItemsQuantities();
+          this.filterItemsBasedOnVeg();
         }
       }
     });
@@ -101,6 +92,38 @@ export class ItemsPage implements OnInit, OnDestroy {
       this.items = this.allItems.filter((x) => x.veg);
     } else {
       this.items = this.allItems;
+    }
+  }
+
+  updateCartData() {
+    this.cartData.totalItem = this.storedData.totalItem;
+    this.cartData.totalPrice = this.storedData.totalPrice;
+  }
+
+  updateAllItems(cartItems) {
+    this.allItems.forEach((element) => {
+      cartItems.forEach((cartItem) => {
+        if (element.id === cartItem.id) {
+          element.quantity = cartItem.quantity;
+        }
+      });
+    });
+
+    console.log('allitems: ', this.allItems);
+    this.cartData.items = this.allItems.filter((x) => x.quantity > 0);
+  }
+
+  resetAllItemsQuantities() {
+    this.allItems.forEach((element) => {
+      element.quantity = 0;
+    });
+  }
+
+  filterItemsBasedOnVeg() {
+    if (this.veg) {
+      this.items = this.allItems.filter((x) => x.veg === true);
+    } else {
+      this.items = [...this.allItems];
     }
   }
 

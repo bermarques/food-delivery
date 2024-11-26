@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { CartService } from 'src/app/services/cart/cart.service';
 import { OrderService } from 'src/app/services/order/order.service';
 
 @Component({
@@ -13,13 +14,25 @@ export class AccountPage implements OnInit, OnDestroy {
   orders: any[] = [];
   ordersSub: Subscription;
 
-  constructor(private orderService: OrderService) {}
+  constructor(
+    private orderService: OrderService,
+    private cartService: CartService
+  ) {}
 
   ngOnInit() {
     this.ordersSub = this.orderService.orders.subscribe((order) => {
       console.log(order);
       if (order instanceof Array) {
         this.orders = order;
+      } else {
+        if (order?.delete) {
+          this.orders = this.orders.filter((x) => x.id !== order.id);
+        } else if (order?.update) {
+          const index = this.orders.findIndex((x) => x.id === order.id);
+          this.orders[index] = order;
+        } else {
+          this.orders = this.orders.concat(order);
+        }
       }
     });
     this.getData();
@@ -40,7 +53,14 @@ export class AccountPage implements OnInit, OnDestroy {
 
   logout() {}
 
-  reorder(order) {}
+  async reorder(order) {
+    let data: any = await this.cartService.getCart();
+    if (data?.value) {
+      this.cartService.alertClearCart(null, null, null, order);
+    } else {
+      this.cartService.orderToCart(order);
+    }
+  }
 
   getHelp(order) {}
 
