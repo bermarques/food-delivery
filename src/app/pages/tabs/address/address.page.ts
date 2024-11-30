@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { Address } from 'src/app/models/address.model';
 import { AddressService } from 'src/app/services/address/address.service';
 import { GlobalService } from 'src/app/services/global/global.service';
 
@@ -10,7 +11,7 @@ import { GlobalService } from 'src/app/services/global/global.service';
 })
 export class AddressPage implements OnInit, OnDestroy {
   isLoading: boolean;
-  addresses: any[] = [];
+  addresses: Address[] = [];
   addressesSub: Subscription;
   model: any = {
     title: 'No Addreses Found',
@@ -25,18 +26,7 @@ export class AddressPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.addressesSub = this.addressService.addresses.subscribe((address) => {
-      if (address instanceof Array) {
-        this.addresses = address;
-      } else {
-        if (address?.delete) {
-          this.addresses = this.addresses.filter((a) => a.id !== address.id);
-        } else if (address?.update) {
-          const index = this.addresses.findIndex((a) => a.id === address.id);
-          this.addresses[index] = address;
-        } else {
-          this.addresses = this.addresses.concat(address);
-        }
-      }
+      this.addresses = address;
     });
 
     this.getAddresses();
@@ -56,9 +46,9 @@ export class AddressPage implements OnInit, OnDestroy {
   getIcon(title: string) {
     return this.global.getIcon(title);
   }
-  editAddress(address: any) {}
+  editAddress(address: Address) {}
 
-  deleteAddress(address: any) {
+  deleteAddress(address: Address) {
     this.globalService.showAlert(
       'Are you sure you want to delete this address?',
       'Confirm',

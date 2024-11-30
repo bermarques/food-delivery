@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Address } from 'src/app/models/address.model';
 
 @Injectable({
   providedIn: 'root',
@@ -191,7 +192,7 @@ export class ApiService {
     },
   ];
 
-  addresses: any[] = [
+  addresses: Address[] = [
     {
       address: 'R. Andrade Neves',
       house: '339',
