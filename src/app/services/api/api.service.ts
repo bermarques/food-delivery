@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Address } from 'src/app/models/address.model';
+import { Category } from 'src/app/models/category.model';
 import { Restaurant } from 'src/app/models/restaurant.model';
 
 @Injectable({
@@ -120,7 +121,7 @@ export class ApiService {
     },
   ];
 
-  categories: any[] = [
+  categories: Category[] = [
     {
       id: 'e00',
       name: 'Italian',
