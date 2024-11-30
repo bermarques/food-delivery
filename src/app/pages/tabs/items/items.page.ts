@@ -4,6 +4,7 @@ import { Preferences } from '@capacitor/preferences';
 import { NavController } from '@ionic/angular';
 import { Subscription, take } from 'rxjs';
 import { Category } from 'src/app/models/category.model';
+import { Item } from 'src/app/models/item.model';
 import { Restaurant } from 'src/app/models/restaurant.model';
 import { ApiService } from 'src/app/services/api/api.service';
 import { CartService } from 'src/app/services/cart/cart.service';
@@ -17,7 +18,7 @@ import { StorageService } from 'src/app/services/storage/storage.service';
 export class ItemsPage implements OnInit, OnDestroy {
   id: any;
   data: any = {};
-  items: any[] = [];
+  items: Item[] = [];
   veg: boolean = false;
   cartData: any = {};
   storedData: any = {};
@@ -28,7 +29,7 @@ export class ItemsPage implements OnInit, OnDestroy {
   };
   restaurants: Restaurant[] = [];
   categories: Category[] = [];
-  allItems: any[] = [];
+  allItems: Item[] = [];
   cartSub: Subscription;
 
   constructor(
@@ -76,9 +77,16 @@ export class ItemsPage implements OnInit, OnDestroy {
 
     setTimeout(async () => {
       try {
-        this.data = this.api.restaurants1.find((x) => (x.uuid = this.id));
-        this.categories = this.api.categories.filter((x) => x.uuid === this.id);
-        this.allItems = this.api.allItems.filter((x) => x.uuid === this.id);
+        this.data = this.api.restaurants1.find(
+          (restaurant) => restaurant.uuid === this.id
+        );
+        this.categories = this.api.categories.filter(
+          (category) => category.uuid === this.id
+        );
+        this.allItems = this.api.allItems.filter(
+          (item) => item.uuid === this.id
+        );
+        this.allItems.forEach((item) => (item.quantity = 0));
         this.items = [...this.allItems];
         await this.cartService.getCartData();
       } catch (error) {
@@ -111,7 +119,6 @@ export class ItemsPage implements OnInit, OnDestroy {
       });
     });
 
-    console.log('allitems: ', this.allItems);
     this.cartData.items = this.allItems.filter((x) => x.quantity > 0);
   }
 
