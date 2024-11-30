@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { Cart } from 'src/app/models/cart.model';
 import { Restaurant } from 'src/app/models/restaurant.model';
 import { Item } from 'src/app/models/item.model';
+import { Order } from 'src/app/models/order.model';
 
 @Injectable({
   providedIn: 'root',
@@ -141,11 +142,11 @@ export class CartService {
     this.storage.setStorage('cart', JSON.stringify(this.model));
   }
 
-  async orderToCart(order) {
+  async orderToCart(order: Order) {
     const data = {
       restaurant: order.restaurant,
       items: order.order,
-    } as Cart;
+    };
     this.model = data;
     await this.calculate();
     this.saveCart();

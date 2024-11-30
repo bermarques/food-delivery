@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Address } from 'src/app/models/address.model';
 import { Category } from 'src/app/models/category.model';
 import { Item } from 'src/app/models/item.model';
+import { Order } from 'src/app/models/order.model';
 import { Restaurant } from 'src/app/models/restaurant.model';
 
 @Injectable({
@@ -218,7 +219,7 @@ export class ApiService {
     },
   ];
 
-  orders: any[] = [
+  orders: Order[] = [
     {
       address: {
         address: 'R. Genérico, 456, 5o andar',
@@ -231,7 +232,7 @@ export class ApiService {
         user_id: 'UA5JWxgjDOYgfXe92H0pFHwulTz2',
       },
       deliveryCharge: 20,
-      total: '540.00',
+      totalPrice: 540.0,
       id: '5aG0RsPuze8NX00B7uRP',
       order: [
         {
@@ -266,6 +267,7 @@ export class ApiService {
       paid: 'COD',
       restaurant: {
         address: 'Rio Grande do Sul, Brasil',
+        uuid: 'u1d1',
         city: '909090567',
         closeTime: '21:00',
         cover: '',
@@ -275,7 +277,6 @@ export class ApiService {
         email: 'plazagrill@gmail.com',
         latitude: 26.1286243,
         longitude: 91.8012675,
-        id: 'r5',
         isClose: true,
         name: 'PlazaGrill',
         openTime: '07:00',
@@ -289,7 +290,7 @@ export class ApiService {
       restaurant_id: 'r5',
       status: 'created',
       time: 'Jul 6, 2020 11:44 AM',
-      priceTotal: '520.00',
+      total: 520.0,
       user_id: '1',
     },
     {
@@ -304,7 +305,7 @@ export class ApiService {
         user_id: 'UA5JWxgjDOYgfXe92H0pFHwulTz2',
       },
       deliveryCharge: 20,
-      total: '440.00',
+      totalPrice: 440.0,
       id: '5aG0RsPuze8NX00B7uR1',
       order: [
         {
@@ -340,13 +341,13 @@ export class ApiService {
       restaurant: {
         address: 'Rio Grande do Sul, Brasil',
         city: '909090271',
+        uuid: 'u1d2',
         closeTime: '20:00',
         cover: 'assets/imgs/1.jpg',
         cuisines: ['Italian', 'Mexican'],
         delivery_time: 25,
         description: 'dd',
         email: 'stay@fit.com',
-        id: 'r1',
         isClose: true,
         latitude: 26.1286243,
         longitude: 91.8012675,
@@ -362,7 +363,7 @@ export class ApiService {
       restaurant_id: 'r1',
       status: 'Delivered',
       time: 'Jul 7, 2020 11:44 AM',
-      priceTotal: '420.00',
+      total: 420.0,
       user_id: '1',
     },
   ];

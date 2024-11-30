@@ -6,10 +6,10 @@ export class Cart {
   constructor(
     public restaurant: Restaurant,
     public items: Item[],
-    public total: number,
-    public totalItem: number,
-    public totalPrice: number,
-    public deliveryCharge: number,
-    public location: Address
+    public total?: number,
+    public totalItem?: number,
+    public totalPrice?: number,
+    public deliveryCharge?: number,
+    public location?: Address
   ) {}
 }

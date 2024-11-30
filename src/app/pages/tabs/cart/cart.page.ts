@@ -4,6 +4,7 @@ import { IonContent, NavController } from '@ionic/angular';
 import * as moment from 'moment';
 import { Subscription } from 'rxjs';
 import { Cart } from 'src/app/models/cart.model';
+import { Order } from 'src/app/models/order.model';
 import { CartService } from 'src/app/services/cart/cart.service';
 import { GlobalService } from 'src/app/services/global/global.service';
 import { OrderService } from 'src/app/services/order/order.service';
@@ -76,11 +77,11 @@ export class CartPage implements OnInit {
 
   async makePayment() {
     try {
-      const data = {
+      const data: Order = {
         restaurant_id: this.model.restaurant.uuid,
         restaurant: this.model.restaurant,
         instructions: this.instructions ? this.instructions : '',
-        order: JSON.stringify(this.model.items),
+        order: this.model.items,
         time: moment().format('lll'),
         address: this.location,
         totalPrice: this.model.totalPrice,

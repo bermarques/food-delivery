@@ -9,8 +9,8 @@ import { Item } from 'src/app/models/item.model';
 export class CartItemComponent implements OnInit {
   @Input() item: Item;
   @Input() index: any;
-  @Output() add: EventEmitter<any> = new EventEmitter();
-  @Output() remove: EventEmitter<any> = new EventEmitter();
+  @Output() add: EventEmitter<Item> = new EventEmitter();
+  @Output() remove: EventEmitter<Item> = new EventEmitter();
 
   constructor() {}
 
