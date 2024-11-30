@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
 import { NavController } from '@ionic/angular';
 import { Subscription, take } from 'rxjs';
+import { Restaurant } from 'src/app/models/restaurant.model';
 import { ApiService } from 'src/app/services/api/api.service';
 import { CartService } from 'src/app/services/cart/cart.service';
 import { StorageService } from 'src/app/services/storage/storage.service';
@@ -24,7 +25,7 @@ export class ItemsPage implements OnInit, OnDestroy {
     icon: 'fast-food-outline',
     title: 'No Menu Available',
   };
-  restaurants: any[] = [];
+  restaurants: Restaurant[] = [];
   categories: any[] = [];
   allItems: any[] = [];
   cartSub: Subscription;
