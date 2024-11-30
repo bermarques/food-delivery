@@ -156,7 +156,7 @@ export class ItemsPage implements OnInit, OnDestroy {
 
   decreaseQuantity(item) {
     const index = this.allItems.findIndex((x) => x.id === item.id);
-    this.cartService.decreaseQuantity(index);
+    this.cartService.decreaseQuantity(index, this.allItems);
   }
 
   async saveToCart() {

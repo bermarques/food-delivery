@@ -3,6 +3,9 @@ import { BehaviorSubject } from 'rxjs';
 import { StorageService } from '../storage/storage.service';
 import { GlobalService } from '../global/global.service';
 import { Router } from '@angular/router';
+import { Cart } from 'src/app/models/cart.model';
+import { Restaurant } from 'src/app/models/restaurant.model';
+import { Item } from 'src/app/models/item.model';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +13,7 @@ import { Router } from '@angular/router';
 export class CartService {
   model: any = {};
   deliveryCharge = 20;
-  private _cart = new BehaviorSubject<any>(null);
+  private _cart = new BehaviorSubject<Cart>(null);
 
   get cart() {
     return this._cart.asObservable();
@@ -42,8 +45,6 @@ export class CartService {
     this.model.totalItem = 0;
     this.model.deliveryCharge = 0;
     this.model.total = 0;
-
-    console.log(this.model);
 
     item.forEach((element) => {
       this.model.totalItem += element.quantity;
@@ -91,7 +92,7 @@ export class CartService {
       ]
     );
   }
-  async increaseQuantity(index, items?, restaurant?) {
+  async increaseQuantity(index, items?: Item[], restaurant?: Restaurant) {
     try {
       if (items) {
         this.model.items = [...items];
@@ -115,7 +116,10 @@ export class CartService {
     }
   }
 
-  decreaseQuantity(index?) {
+  decreaseQuantity(index?, items?: Item[]) {
+    if (items) {
+      this.model.items = [...items];
+    }
     if (this.model.items[index].quantity !== 0) {
       this.model.items[index].quantity -= 1;
     } else {
@@ -141,7 +145,7 @@ export class CartService {
     const data = {
       restaurant: order.restaurant,
       items: order.order,
-    };
+    } as Cart;
     this.model = data;
     await this.calculate();
     this.saveCart();

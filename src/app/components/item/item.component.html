@@ -7,7 +7,7 @@
     {{ item?.name }}
     <p class="ion-text-wrap">{{ item?.desc }}</p>
     <ion-text
-      ><p>₹{{ item?.price | number : "0.2-2" }}</p></ion-text
+      ><p>${{ item?.price | number : "0.2-2" }}</p></ion-text
     >
   </ion-label>
   <ion-row

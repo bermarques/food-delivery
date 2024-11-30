@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { IonContent, NavController } from '@ionic/angular';
 import * as moment from 'moment';
 import { Subscription } from 'rxjs';
+import { Cart } from 'src/app/models/cart.model';
 import { CartService } from 'src/app/services/cart/cart.service';
 import { GlobalService } from 'src/app/services/global/global.service';
 import { OrderService } from 'src/app/services/order/order.service';
@@ -17,7 +18,7 @@ export class CartPage implements OnInit {
   @ViewChild(IonContent, { static: false }) content: IonContent;
   urlCheck = false;
   url = '';
-  model: any;
+  model = {} as Cart;
   deliveryCharge = 5;
   instructions: any;
   location: any = {};
@@ -33,8 +34,7 @@ export class CartPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.cartSub = this.cartService.cart.subscribe((cart) => {
-      console.log(cart);
+    this.cartSub = this.cartService.cart.subscribe((cart: Cart) => {
       this.model = cart;
       if (!this.model) this.location = {};
     });
