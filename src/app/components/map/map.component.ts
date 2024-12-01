@@ -4,6 +4,7 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnDestroy,
   OnInit,
   Output,
   Renderer2,
@@ -17,7 +18,7 @@ import { LocationService } from 'src/app/services/location/location.service';
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
-export class MapComponent implements OnInit, AfterViewInit {
+export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('map', { static: true }) mapElementRef: ElementRef;
   googleMaps: any;
   map: any;
@@ -25,6 +26,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   @Input() update = false;
   @Input() center = { lat: -32.020624834560465, lng: -52.10440742972138 };
   @Output() location = new EventEmitter();
+  mapListener: any;
 
   constructor(
     private maps: GoogleMapsService,
@@ -102,9 +104,13 @@ export class MapComponent implements OnInit, AfterViewInit {
       draggable: true,
       animation: googleMaps.Animation.DROP,
     });
-    this.googleMaps.event.addListener(this.marker, 'dragend', () => {
-      this.getAddress(this.marker.position.lat(), this.marker.position.lng());
-    });
+    this.mapListener = this.googleMaps.event.addListener(
+      this.marker,
+      'dragend',
+      () => {
+        this.getAddress(this.marker.position.lat(), this.marker.position.lng());
+      }
+    );
   }
 
   async getAddress(lat, lng) {
@@ -120,5 +126,10 @@ export class MapComponent implements OnInit, AfterViewInit {
     } catch (err) {
       throw err;
     }
+  }
+
+  ngOnDestroy() {
+    if (!this.mapListener)
+      this.googleMaps.event.removeListener(this.mapListener);
   }
 }
