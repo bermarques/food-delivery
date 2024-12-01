@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { NavController } from '@ionic/angular';
+import { AddressService } from 'src/app/services/address/address.service';
+import { GlobalService } from 'src/app/services/global/global.service';
 
 @Component({
   selector: 'app-edit-address',
@@ -8,12 +11,18 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 })
 export class EditAddressPage implements OnInit {
   form: FormGroup;
-  locationName: string = 'Locating...';
   isSubmitted = false;
+  location: any = {};
+  isLocationFetched: boolean;
 
-  constructor() {}
+  constructor(
+    private addressService: AddressService,
+    private global: GlobalService,
+    private navCtrl: NavController
+  ) {}
 
   ngOnInit() {
+    this.location.location_name = 'Locating...';
     this.initForm();
   }
 
@@ -27,11 +36,37 @@ export class EditAddressPage implements OnInit {
 
   toggleSubmit() {
     this.isSubmitted = !this.isSubmitted;
+    this.toggleFetched();
+  }
+
+  toggleFetched() {
+    this.isLocationFetched = !this.isLocationFetched;
+  }
+
+  fetchLocation(event) {
+    this.location = event;
   }
 
   onSubmit() {
-    this.toggleSubmit();
-    if (!this.form.valid) return;
-    this.toggleSubmit();
+    try {
+      this.toggleSubmit();
+      if (!this.form.valid || !this.isLocationFetched)
+        return this.toggleSubmit();
+
+      const data = {
+        title: this.form.get('title').value,
+        address: this.location.address,
+        house: this.form.get('house').value,
+        landmark: this.form.get('landmark').value,
+        lat: this.location.lat,
+        lng: this.location.lng,
+      };
+      this.addressService.addAddress(data);
+      this.navCtrl.back();
+      this.toggleSubmit();
+    } catch (err) {
+      this.global.errorToast();
+      throw err;
+    }
   }
 }

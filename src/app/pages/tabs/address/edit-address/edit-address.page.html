@@ -6,24 +6,21 @@
   </ion-toolbar>
 
   <div class="map">
-    <app-map></app-map>
+    <app-map (location)="fetchLocation($event)"></app-map>
   </div>
 
   <form [formGroup]="form">
     <ion-list>
       <ion-item lines="none">
         <ion-icon name="location-outline" slot="start" color="dark"></ion-icon>
-        <ion-label>{{locationName}}</ion-label>
+        <ion-label>{{location?.location_name}}</ion-label>
         <ion-button slot="end" size="small" color="light">
           <span>CHANGE</span>
         </ion-button>
       </ion-item>
-      <ion-row class="ion-padding-horizontal">
+      <ion-row class="ion-padding-horizontal ion-text-justify">
         <ion-note class="ion-text-wrap ion-padding-horizontal"
-          >Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae impedit
-          harum quidem, deserunt fugiat magni nam porro fuga quam soluta dolor
-          deleniti fugit omnis dolore consectetur atque aspernatur nemo
-          voluptas?</ion-note
+          >{{location?.address}}</ion-note
         >
       </ion-row>
       <ion-item-group class="ion-padding">

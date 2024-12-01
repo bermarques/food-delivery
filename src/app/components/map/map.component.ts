@@ -2,8 +2,10 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnInit,
+  Output,
   Renderer2,
   ViewChild,
 } from '@angular/core';
@@ -21,6 +23,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   map: any;
   marker: any;
   center = { lat: -32.020624834560465, lng: -52.10440742972138 };
+  @Output() location = new EventEmitter();
 
   constructor(
     private maps: GoogleMapsService,
@@ -42,6 +45,7 @@ export class MapComponent implements OnInit, AfterViewInit {
         lng: position.coords.longitude,
       };
       await this.loadMap();
+      this.getAddress(this.center.lat, this.center.lng);
     } catch (err) {}
   }
 
@@ -93,5 +97,23 @@ export class MapComponent implements OnInit, AfterViewInit {
       draggable: true,
       animation: googleMaps.Animation.DROP,
     });
+    this.googleMaps.event.addListener(this.marker, 'dragend', () => {
+      this.getAddress(this.marker.position.lat(), this.marker.position.lng());
+    });
+  }
+
+  async getAddress(lat, lng) {
+    try {
+      const result = await this.maps.getAdress(lat, lng);
+      const loc = {
+        location_name: result.address_components[0].short_name,
+        address: result.formatted_address,
+        lat,
+        lng,
+      };
+      this.location.emit(loc);
+    } catch (err) {
+      throw err;
+    }
   }
 }

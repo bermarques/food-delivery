@@ -24,7 +24,9 @@ export class AddressService {
     }
   }
 
-  addAddress(param: Address) {
+  addAddress(param) {
+    param.id = 'address1';
+    param.user_id = 'user1';
     const currentAddresses = this._addresses.value;
     currentAddresses.push(
       new Address(
