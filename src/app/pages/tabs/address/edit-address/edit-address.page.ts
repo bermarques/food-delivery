@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { AddressService } from 'src/app/services/address/address.service';
 import { GlobalService } from 'src/app/services/global/global.service';
@@ -14,24 +15,72 @@ export class EditAddressPage implements OnInit {
   isSubmitted = false;
   location: any = {};
   isLocationFetched: boolean;
+  center: any;
+  update = false;
+  id: any;
+  isLoading = false;
 
   constructor(
     private addressService: AddressService,
     private global: GlobalService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
-    this.location.location_name = 'Locating...';
-    this.initForm();
+    this.checkForUpdate();
   }
 
-  initForm() {
-    this.form = new FormGroup({
-      title: new FormControl('', { validators: [Validators.required] }),
-      house: new FormControl('', { validators: [Validators.required] }),
-      landmark: new FormControl('', { validators: [Validators.required] }),
+  checkForUpdate() {
+    this.isLoading = true;
+    this.location.location_name = 'Locating...';
+    this.isLocationFetched = false;
+    this.route.queryParams.subscribe(async (data) => {
+      if (data?.data) {
+        const address = JSON.parse(data.data);
+        this.center = {
+          lat: address.lat,
+          lng: address.lng,
+        };
+        this.update = true;
+        this.location.lat = this.center.lat;
+        this.location.lng = this.center.lng;
+        this.location.address = address.address;
+        this.location.location_name = address.title;
+        this.id = address.id;
+        setTimeout(async () => {
+          await this.initForm(address);
+          this.toggleFetched();
+        }, 3000);
+      } else {
+        this.update = false;
+        this.initForm();
+      }
     });
+  }
+  initForm(address?) {
+    let data = {
+      title: null,
+      house: null,
+      landmark: null,
+    };
+
+    if (address) {
+      data = {
+        title: address.title,
+        house: address.house,
+        landmark: address.landmark,
+      };
+    }
+
+    this.form = new FormGroup({
+      title: new FormControl(data.title, { validators: [Validators.required] }),
+      house: new FormControl(data.house, { validators: [Validators.required] }),
+      landmark: new FormControl(data.landmark, {
+        validators: [Validators.required],
+      }),
+    });
+    this.isLoading = false;
   }
 
   toggleSubmit() {
@@ -49,10 +98,8 @@ export class EditAddressPage implements OnInit {
 
   onSubmit() {
     try {
-      this.toggleSubmit();
       if (!this.form.valid || !this.isLocationFetched)
         return this.toggleSubmit();
-
       const data = {
         title: this.form.get('title').value,
         address: this.location.address,
@@ -61,7 +108,8 @@ export class EditAddressPage implements OnInit {
         lat: this.location.lat,
         lng: this.location.lng,
       };
-      this.addressService.addAddress(data);
+      if (!this.id) this.addressService.addAddress(data);
+      else this.addressService.updateAddress(this.id, data);
       this.navCtrl.back();
       this.toggleSubmit();
     } catch (err) {

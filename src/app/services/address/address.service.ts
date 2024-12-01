@@ -43,7 +43,7 @@ export class AddressService {
     this._addresses.next(currentAddresses);
   }
 
-  updateAddress(id: string, param: Address) {
+  updateAddress(id: string, param) {
     param.id = id;
     let currentAddresses = this._addresses.value;
     const index = currentAddresses.findIndex((x) => x.id === id);

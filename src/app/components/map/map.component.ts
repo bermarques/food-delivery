@@ -22,7 +22,8 @@ export class MapComponent implements OnInit, AfterViewInit {
   googleMaps: any;
   map: any;
   marker: any;
-  center = { lat: -32.020624834560465, lng: -52.10440742972138 };
+  @Input() update = false;
+  @Input() center = { lat: -32.020624834560465, lng: -52.10440742972138 };
   @Output() location = new EventEmitter();
 
   constructor(
@@ -39,13 +40,17 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   async initMap() {
     try {
-      const position = await this.locationService.getCurrentPosition();
-      this.center = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-      };
-      await this.loadMap();
-      this.getAddress(this.center.lat, this.center.lng);
+      if (!this.update) {
+        const position = await this.locationService.getCurrentPosition();
+        this.center = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        await this.loadMap();
+        this.getAddress(this.center.lat, this.center.lng);
+      } else {
+        await this.loadMap();
+      }
     } catch (err) {}
   }
 
