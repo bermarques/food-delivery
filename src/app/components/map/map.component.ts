@@ -10,6 +10,7 @@ import {
   Renderer2,
   ViewChild,
 } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { GoogleMapsService } from 'src/app/services/google-maps/google-maps.service';
 import { LocationService } from 'src/app/services/location/location.service';
 
@@ -27,6 +28,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() center = { lat: -32.020624834560465, lng: -52.10440742972138 };
   @Output() location = new EventEmitter();
   mapListener: any;
+  mapChange: Subscription;
 
   constructor(
     private maps: GoogleMapsService,
@@ -37,6 +39,15 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {}
 
   ngAfterViewInit() {
+    this.mapChange = this.maps.markerChange.subscribe(async (loc) => {
+      if (loc?.lat) {
+        const googleMaps = this.googleMaps;
+        const location = new googleMaps.LatLng(loc.lat, loc.lng);
+        this.map.panTo(location);
+        this.marker.setMap(null);
+        await this.addMarker(location);
+      }
+    });
     this.initMap();
   }
 
@@ -115,7 +126,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async getAddress(lat, lng) {
     try {
-      const result = await this.maps.getAdress(lat, lng);
+      const result = await this.maps.getAddress(lat, lng);
       const loc = {
         location_name: result.address_components[0].short_name,
         address: result.formatted_address,
@@ -129,7 +140,8 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (!this.mapListener)
+    if (this.mapListener)
       this.googleMaps.event.removeListener(this.mapListener);
+    if (this.mapChange) this.mapChange.unsubscribe();
   }
 }

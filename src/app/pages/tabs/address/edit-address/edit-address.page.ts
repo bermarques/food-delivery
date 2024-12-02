@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { SearchLocationComponent } from 'src/app/components/search-location/search-location.component';
 import { AddressService } from 'src/app/services/address/address.service';
 import { GlobalService } from 'src/app/services/global/global.service';
+import { GoogleMapsService } from 'src/app/services/google-maps/google-maps.service';
 
 @Component({
   selector: 'app-edit-address',
@@ -24,7 +26,8 @@ export class EditAddressPage implements OnInit {
     private addressService: AddressService,
     private global: GlobalService,
     private navCtrl: NavController,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private googleMaps: GoogleMapsService
   ) {}
 
   ngOnInit() {
@@ -48,10 +51,9 @@ export class EditAddressPage implements OnInit {
         this.location.address = address.address;
         this.location.location_name = address.title;
         this.id = address.id;
-        setTimeout(async () => {
-          await this.initForm(address);
-          this.toggleFetched();
-        }, 3000);
+
+        this.initForm(address);
+        this.toggleFetched();
       } else {
         this.update = false;
         this.initForm();
@@ -114,6 +116,28 @@ export class EditAddressPage implements OnInit {
       this.toggleSubmit();
     } catch (err) {
       this.global.errorToast();
+      throw err;
+    }
+  }
+
+  async searchLocation() {
+    try {
+      const options = {
+        component: SearchLocationComponent,
+        cssClass: 'address-modal',
+        swipeToClose: true,
+      };
+      const location = await this.global.createModal(options);
+      if (location) {
+        this.location = location;
+        const loc = {
+          lat: location.lat,
+          lng: location.lng,
+        };
+        this.update = true;
+        this.googleMaps.changeMarkerInMap(loc);
+      }
+    } catch (err) {
       throw err;
     }
   }

@@ -1,13 +1,25 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { Injectable, NgZone } from '@angular/core';
+import { BehaviorSubject, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GoogleMapsService {
-  constructor(private http: HttpClient) {}
+  googleMaps: any;
+  private _places = new BehaviorSubject([]);
+  private _markerChange = new BehaviorSubject<any>({});
+
+  get places() {
+    return this._places.asObservable();
+  }
+
+  get markerChange() {
+    return this._markerChange.asObservable();
+  }
+
+  constructor(private http: HttpClient, private zone: NgZone) {}
 
   loadGoogleMaps() {
     const win = window as any;
@@ -35,7 +47,7 @@ export class GoogleMapsService {
     });
   }
 
-  getAdress(lat: number, lng: number) {
+  getAddress(lat: number, lng: number) {
     return new Promise<any>((resolve, reject) => {
       this.http
         .get<any>(
@@ -56,5 +68,61 @@ export class GoogleMapsService {
           },
         });
     });
+  }
+
+  async getPlaces(query: string) {
+    try {
+      if (!this.googleMaps) {
+        this.googleMaps = await this.loadGoogleMaps();
+      }
+      let googleMaps = this.googleMaps;
+      let service = new googleMaps.places.AutocompleteService();
+      service.getPlacePredictions(
+        {
+          input: query,
+        },
+        (predictions) => {
+          let autoComplete = [];
+          this.zone.run(() => {
+            if (predictions != null) {
+              predictions.forEach(async (pred) => {
+                const latLng: any = await this.geoCode(
+                  pred.description,
+                  googleMaps
+                );
+                const place = {
+                  location_name: pred.structured_formatting.main_text,
+                  address: pred.description,
+                  lat: latLng.lat,
+                  lng: latLng.lng,
+                };
+                autoComplete.push(place);
+              });
+              this._places.next(autoComplete);
+            }
+          });
+        }
+      );
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  geoCode(address, googleMaps) {
+    return new Promise((resolve, reject) => {
+      const geocoder = new googleMaps.Geocoder();
+      geocoder.geocode({ address }, (results, status) => {
+        if (status === 'OK') {
+          const location = results[0].geometry.location;
+          resolve({ lat: location.lat(), lng: location.lng() });
+        } else {
+          reject(new Error('Geocoder failed due to: ' + status));
+        }
+      });
+    });
+  }
+
+  changeMarkerInMap(location) {
+    this._markerChange.next(location);
   }
 }

@@ -89,6 +89,13 @@
   --ion-color-tint: var(--ion-color-white-tint);
 }
 
+.address-modal::part(content) {
+  --height: 70%;
+  --border-radius: 4px;
+  position: absolute;
+  bottom: 0;
+}
+
 @media (prefers-color-scheme: dark) {
   /*
      * Dark Colors
