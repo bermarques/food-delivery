@@ -75,34 +75,24 @@ export class GoogleMapsService {
       if (!this.googleMaps) {
         this.googleMaps = await this.loadGoogleMaps();
       }
-      let googleMaps = this.googleMaps;
-      let service = new googleMaps.places.AutocompleteService();
-      service.getPlacePredictions(
-        {
-          input: query,
-        },
-        (predictions) => {
-          let autoComplete = [];
-          this.zone.run(() => {
-            if (predictions != null) {
-              predictions.forEach(async (pred) => {
-                const latLng: any = await this.geoCode(
-                  pred.description,
-                  googleMaps
-                );
-                const place = {
-                  location_name: pred.structured_formatting.main_text,
-                  address: pred.description,
-                  lat: latLng.lat,
-                  lng: latLng.lng,
-                };
-                autoComplete.push(place);
-              });
-              this._places.next(autoComplete);
-            }
-          });
-        }
-      );
+      const service = new this.googleMaps.places.AutocompleteService();
+      service.getPlacePredictions({ input: query }, (predictions) => {
+        const places = [];
+        predictions?.forEach(async (prediction) => {
+          const { lat, lng }: any = await this.geoCode(
+            prediction.description,
+            this.googleMaps
+          );
+          const place = {
+            location_name: prediction.structured_formatting.main_text,
+            address: prediction.description,
+            lat,
+            lng,
+          };
+          places.push(place);
+        });
+        this._places.next(places);
+      });
     } catch (err) {
       throw err;
     }
