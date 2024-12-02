@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { GlobalService } from 'src/app/services/global/global.service';
 import { GoogleMapsService } from 'src/app/services/google-maps/google-maps.service';
+import { LocationService } from 'src/app/services/location/location.service';
 
 @Component({
   selector: 'app-search-location',
@@ -15,7 +16,8 @@ export class SearchLocationComponent implements OnInit, OnDestroy {
 
   constructor(
     private global: GlobalService,
-    private googleMaps: GoogleMapsService
+    private googleMaps: GoogleMapsService,
+    private locationService: LocationService
   ) {}
 
   ngOnInit() {
@@ -42,6 +44,29 @@ export class SearchLocationComponent implements OnInit, OnDestroy {
     this.global.modalDismiss(place);
   }
 
+  async getCurrentPosition() {
+    try {
+      this.global.showLoader();
+      const position = await this.locationService.getCurrentPosition();
+      const { latitude, longitude } = position.coords;
+      const results = await this.googleMaps.getAddress(latitude, longitude);
+      const place = {
+        location_name: results.address_components[0].short_name,
+        address: results.formatted_address,
+        lat: latitude,
+        lng: longitude,
+      };
+      this.global.hideLoader();
+      this.dismiss(place);
+    } catch (err) {
+      this.global.hideLoader();
+
+      this.global.errorToast(
+        'Check if GPS is enabled and the app has its location permission.',
+        5000
+      );
+    }
+  }
   ngOnDestroy(): void {
     if (this.placesSub) this.placesSub.unsubscribe();
   }
