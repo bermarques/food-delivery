@@ -95,8 +95,16 @@
   position: absolute;
   bottom: 0;
 }
+
 .custom-modal::part(content) {
   --height: 80%;
+  --border-radius: 4px;
+  position: absolute;
+  bottom: 0;
+}
+
+.home-modal::part(content) {
+  --height: 90%;
   --border-radius: 4px;
   position: absolute;
   bottom: 0;

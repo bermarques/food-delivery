@@ -1,8 +1,17 @@
-<ion-header class="ion-no-border">
+<ion-header class="ion-no-border" *ngIf="!from || from !== 'home'">
   <ion-toolbar color="light">
     <ion-title mode="md">
       <ion-label>Choose an address</ion-label>
     </ion-title>
+    <ion-buttons slot="start" *ngIf="from && from === 'select-place'">
+      <ion-button fill="clear">
+        <ion-icon
+          name="arrow-back-outline"
+          color="dark"
+          slot="icon-only"
+        ></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-searchbar
       slot="start"
       animated
@@ -10,7 +19,7 @@
       #searchInput
       placeholder="Search for location"
       (ionChange)="onSearchChange($event)"
-      *ngIf="!from"
+      *ngIf="!from || from === 'select-place'"
     >
     </ion-searchbar>
     <ion-buttons slot="end" *ngIf="!from">
@@ -30,7 +39,23 @@
     >
   </ion-item>
 
-  <ion-list *ngIf="from">
+  <ion-list *ngIf="from && (!query || query.length === 0)">
+    <ion-list-header *ngIf="from === 'select-place'">
+      <ion-text color="secondary"><h5>SAVED ADDRESSES</h5></ion-text>
+    </ion-list-header>
+
+    <ion-item *ngIf="from === 'home'">
+      <ion-label>Select Address</ion-label>
+      <ion-button
+        color="primary"
+        fill="clear"
+        size="small"
+        slot="end"
+        (click)="dismiss('select')"
+        >VIEW ALL</ion-button
+      >
+    </ion-item>
+
     <ion-item
       *ngFor="let savedPlace of savedPlaces"
       (click)="selectPlace(savedPlace)"
@@ -40,6 +65,11 @@
         >{{ savedPlace?.title }}
         <p>{{ savedPlace?.address }}</p>
       </ion-label>
+    </ion-item>
+
+    <ion-item *ngIf="from === 'home'" lines="none" (click)="dismiss('select')">
+      <ion-icon name="search-outline" color="primary" slot="start"></ion-icon>
+      <ion-text><h5>Enter location manually</h5></ion-text>
     </ion-item>
 
     <ion-item lines="none" *ngIf="from === 'cart'" (click)="dismiss('add')">

@@ -20,9 +20,12 @@ export class AddressService {
 
   constructor(private api: ApiService) {}
 
-  async getAddresses() {
+  async getAddresses(limit: number = 0) {
     try {
       let allAddress: Address[] = this.api.addresses;
+      if (limit > 0) {
+        allAddress = allAddress.slice(0, limit);
+      }
       this._addresses.next(allAddress);
     } catch (err) {
       throw err;
