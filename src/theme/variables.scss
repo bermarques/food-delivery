@@ -95,6 +95,12 @@
   position: absolute;
   bottom: 0;
 }
+.custom-modal::part(content) {
+  --height: 80%;
+  --border-radius: 4px;
+  position: absolute;
+  bottom: 0;
+}
 
 @media (prefers-color-scheme: dark) {
   /*

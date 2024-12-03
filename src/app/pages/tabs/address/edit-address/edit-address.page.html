@@ -95,22 +95,19 @@
     </ion-list>
     <div class="ion-padding-horizontal">
       <ion-button
-        *ngIf="!isSubmitted"
         expand="block"
         type="submit"
         color="primary"
-        [disabled]="!form?.valid"
+        [disabled]="!form?.valid || isSubmitted"
         (click)="onSubmit()"
-        >SAVE & PROCEED</ion-button
       >
-      <ion-button
-        *ngIf="isSubmitted"
-        expand="block"
-        type="submit"
-        color="primary"
-        (click)="onSubmit()"
-        ><ion-spinner name="crescent"></ion-spinner>></ion-button
-      >
+        <ng-container *ngIf="!isSubmitted; else loading">
+          SAVE & PROCEED
+        </ng-container>
+        <ng-template #loading>
+          <ion-spinner name="crescent"></ion-spinner>
+        </ng-template>
+      </ion-button>
     </div>
   </form>
 </ion-content>

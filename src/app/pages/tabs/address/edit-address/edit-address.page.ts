@@ -100,8 +100,6 @@ export class EditAddressPage implements OnInit {
 
   onSubmit() {
     try {
-      if (!this.form.valid || !this.isLocationFetched)
-        return this.toggleSubmit();
       const data = {
         title: this.form.get('title').value,
         address: this.location.address,

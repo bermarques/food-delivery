@@ -8,14 +8,19 @@ import { Address } from 'src/app/models/address.model';
 })
 export class AddressService {
   private _addresses = new BehaviorSubject<Address[]>([]);
+  private _addressChange = new BehaviorSubject<Address>(null);
 
   get addresses() {
     return this._addresses.asObservable();
   }
 
+  get addressChange() {
+    return this._addressChange.asObservable();
+  }
+
   constructor(private api: ApiService) {}
 
-  getAddresses() {
+  async getAddresses() {
     try {
       let allAddress: Address[] = this.api.addresses;
       this._addresses.next(allAddress);
@@ -28,19 +33,19 @@ export class AddressService {
     param.id = 'address1';
     param.user_id = 'user1';
     const currentAddresses = this._addresses.value;
-    currentAddresses.push(
-      new Address(
-        param.id,
-        param.user_id,
-        param.title,
-        param.address,
-        param.house,
-        param.landmark,
-        param.lat,
-        param.lng
-      )
+    const newAddress = new Address(
+      param.id,
+      param.user_id,
+      param.title,
+      param.address,
+      param.house,
+      param.landmark,
+      param.lat,
+      param.lng
     );
+    currentAddresses.push();
     this._addresses.next(currentAddresses);
+    this._addressChange.next(newAddress);
   }
 
   updateAddress(id: string, param) {
@@ -64,5 +69,9 @@ export class AddressService {
     let currentAddresses = this._addresses.value;
     currentAddresses = currentAddresses.filter((x) => x.id !== param.id);
     this._addresses.next(currentAddresses);
+  }
+
+  changeAddress(address) {
+    this._addressChange.next(address);
   }
 }

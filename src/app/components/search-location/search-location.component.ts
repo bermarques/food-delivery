@@ -1,5 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { Address } from 'src/app/models/address.model';
+import { AddressService } from 'src/app/services/address/address.service';
 import { GlobalService } from 'src/app/services/global/global.service';
 import { GoogleMapsService } from 'src/app/services/google-maps/google-maps.service';
 import { LocationService } from 'src/app/services/location/location.service';
@@ -13,17 +15,24 @@ export class SearchLocationComponent implements OnInit, OnDestroy {
   query: string;
   places: any[];
   placesSub: Subscription;
+  savedPlaces: Address[];
+  addressSub: Subscription;
+  @Input() from;
 
   constructor(
     private global: GlobalService,
     private googleMaps: GoogleMapsService,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private addressService: AddressService
   ) {}
 
   ngOnInit() {
     this.placesSub = this.googleMaps.places.subscribe((places) => {
       this.places = places;
     });
+    if (this.from) {
+      this.getSavedPlaces();
+    }
   }
 
   async onSearchChange(event) {
@@ -60,14 +69,27 @@ export class SearchLocationComponent implements OnInit, OnDestroy {
       this.dismiss(place);
     } catch (err) {
       this.global.hideLoader();
-
       this.global.errorToast(
         'Check if GPS is enabled and the app has its location permission.',
         5000
       );
     }
   }
+
+  async getSavedPlaces() {
+    this.global.showLoader();
+    this.addressSub = this.addressService.addresses.subscribe((addresses) => {
+      this.savedPlaces = addresses;
+    });
+    await this.addressService.getAddresses();
+    this.global.hideLoader();
+  }
+
+  selectPlace(place) {
+    this.dismiss(place);
+  }
   ngOnDestroy(): void {
     if (this.placesSub) this.placesSub.unsubscribe();
+    if (this.addressSub) this.addressSub.unsubscribe();
   }
 }
